@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             taskModal.classList.add('active');
         }, 10);
+        // Réinitialiser le formulaire
+        taskForm.reset();
+        document.getElementById('subtasksList').innerHTML = '';
+        document.getElementById('tagsList').innerHTML = '';
     };
 
     const closeModalHandler = () => {
@@ -46,13 +50,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const createTaskElement = (task) => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task-card';
+        taskElement.dataset.id = task.id || Date.now();
+        
+        // Ajouter le bouton de suppression
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-task-btn';
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.onclick = () => {
+            taskElement.remove();
+            saveTasks();
+        };
+
+        // Ajouter le bouton de modification
+        const editButton = document.createElement('button');
+        editButton.className = 'edit-task-btn';
+        editButton.innerHTML = '<i class="fas fa-edit"></i>';
+        editButton.onclick = () => {
+            // Logique pour éditer la tâche
+            openModal();
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            
+            // Charger les sous-tâches
+            const subtasksList = document.getElementById('subtasksList');
+            subtasksList.innerHTML = '';
+            task.subtasks.forEach(subtask => {
+                const subtaskElement = document.createElement('div');
+                subtaskElement.className = 'subtask-item';
+                subtaskElement.innerHTML = `
+                    <span>${subtask.text}</span>
+                    <button class="remove-item"><i class="fas fa-times"></i></button>
+                `;
+                subtasksList.appendChild(subtaskElement);
+            });
+
+            // Charger les tags
+            const tagsList = document.getElementById('tagsList');
+            tagsList.innerHTML = '';
+            task.tags.forEach(tag => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `
+                    <span>${tag}</span>
+                    <button class="remove-item"><i class="fas fa-times"></i></button>
+                `;
+                tagsList.appendChild(tagElement);
+            });
+        };
+
         taskElement.innerHTML = `
             <div class="task-header">
                 <h3 class="task-title">${task.title}</h3>
                 <span class="task-priority priority-${task.priority}">${task.priority}</span>
             </div>
-            <p>${task.description || ''}</p>
-            ${task.dueDate ? `<p><i class="far fa-calendar"></i> ${task.dueDate}</p>` : ''}
+            <p class="task-description">${task.description || ''}</p>
+            ${task.dueDate ? `<p class="task-date"><i class="far fa-calendar"></i> ${task.dueDate}</p>` : ''}
             ${task.subtasks.length ? `
                 <div class="subtasks">
                     ${task.subtasks.map(subtask => `
@@ -68,7 +122,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                 </div>
             ` : ''}
+            <div class="task-actions"></div>
         `;
+
+        // Ajouter les boutons à la div des actions
+        taskElement.querySelector('.task-actions').appendChild(editButton);
+        taskElement.querySelector('.task-actions').appendChild(deleteButton);
+
+        // Ajouter les event listeners pour les checkbox des sous-tâches
+        taskElement.querySelectorAll('.subtask-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => saveTasks());
+        });
 
         return taskElement;
     };
@@ -87,65 +151,55 @@ document.addEventListener('DOMContentLoaded', () => {
             id: Date.now(),
             title: document.getElementById('taskTitle').value,
             description: document.getElementById('taskDescription').value,
-            category: document.getElementById('taskCategory').value,
             priority: document.getElementById('taskPriority').value,
             dueDate: document.getElementById('taskDueDate').value,
-            time: document.getElementById('taskTime').value,
             subtasks: Array.from(document.querySelectorAll('#subtasksList .subtask-item'))
                 .map(item => ({
                     text: item.querySelector('span').textContent,
                     completed: false
                 })),
             tags: Array.from(document.querySelectorAll('#tagsList .tag-item'))
-                .map(item => item.querySelector('span').textContent),
-            completed: false,
-            createdAt: new Date().toISOString()
+                .map(item => item.querySelector('span').textContent)
         };
 
         addTask(task);
-        taskForm.reset();
         closeModalHandler();
+        taskForm.reset();
+        document.getElementById('subtasksList').innerHTML = '';
+        document.getElementById('tagsList').innerHTML = '';
     };
 
     // Gestionnaire des sous-tâches
     const addSubtask = () => {
-        const input = document.getElementById('subtaskInput');
-        const text = input.value.trim();
+        const subtaskInput = document.getElementById('subtaskInput');
+        const subtaskText = subtaskInput.value.trim();
         
-        if (text) {
-            const subtasksList = document.getElementById('subtasksList');
-            const subtaskItem = document.createElement('div');
-            subtaskItem.className = 'subtask-item';
-            subtaskItem.innerHTML = `
-                <span>${text}</span>
-                <button type="button" class="remove-button">
-                    <i class="fas fa-times"></i>
-                </button>
+        if (subtaskText) {
+            const subtaskElement = document.createElement('div');
+            subtaskElement.className = 'subtask-item';
+            subtaskElement.innerHTML = `
+                <span>${subtaskText}</span>
+                <button class="remove-item"><i class="fas fa-times"></i></button>
             `;
-            
-            subtasksList.appendChild(subtaskItem);
-            input.value = '';
+            document.getElementById('subtasksList').appendChild(subtaskElement);
+            subtaskInput.value = '';
         }
     };
 
     // Gestionnaire des tags
     const addTag = () => {
-        const input = document.getElementById('tagInput');
-        const text = input.value.trim();
+        const tagInput = document.getElementById('tagInput');
+        const tagText = tagInput.value.trim();
         
-        if (text) {
-            const tagsList = document.getElementById('tagsList');
-            const tagItem = document.createElement('div');
-            tagItem.className = 'tag-item';
-            tagItem.innerHTML = `
-                <span>${text}</span>
-                <button type="button" class="remove-button">
-                    <i class="fas fa-times"></i>
-                </button>
+        if (tagText) {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag-item';
+            tagElement.innerHTML = `
+                <span>${tagText}</span>
+                <button class="remove-item"><i class="fas fa-times"></i></button>
             `;
-            
-            tagsList.appendChild(tagItem);
-            input.value = '';
+            document.getElementById('tagsList').appendChild(tagElement);
+            tagInput.value = '';
         }
     };
 
@@ -156,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         tasks.forEach(task => {
             const title = task.querySelector('.task-title').textContent.toLowerCase();
-            const description = task.querySelector('p').textContent.toLowerCase();
+            const description = task.querySelector('.task-description').textContent.toLowerCase();
             const isVisible = title.includes(searchTerm) || description.includes(searchTerm);
             task.style.display = isVisible ? 'block' : 'none';
         });
@@ -164,28 +218,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gestionnaire des filtres
     const handleFilter = (e) => {
-        const filterType = e.target.dataset.filter;
+        const filter = e.target.dataset.filter;
         filterButtons.forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
         
         const tasks = document.querySelectorAll('.task-card');
         tasks.forEach(task => {
-            switch(filterType) {
+            const priority = task.querySelector('.task-priority').textContent.toLowerCase();
+            
+            switch(filter) {
                 case 'all':
                     task.style.display = 'block';
                     break;
-                case 'today':
-                    const dueDate = task.querySelector('.task-date')?.textContent;
-                    const isToday = dueDate === new Date().toLocaleDateString();
-                    task.style.display = isToday ? 'block' : 'none';
-                    break;
-                case 'important':
-                    const priority = task.querySelector('.task-priority').textContent;
-                    task.style.display = priority === 'high' ? 'block' : 'none';
-                    break;
-                case 'completed':
-                    const isCompleted = task.classList.contains('completed');
-                    task.style.display = isCompleted ? 'block' : 'none';
+                case 'high':
+                case 'medium':
+                case 'low':
+                    task.style.display = priority === filter ? 'block' : 'none';
                     break;
             }
         });
@@ -195,11 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveTasks = () => {
         const tasks = Array.from(tasksContainer.children).map(taskElement => {
             return {
+                id: taskElement.dataset.id,
                 title: taskElement.querySelector('.task-title').textContent,
+                description: taskElement.querySelector('.task-description').textContent,
                 priority: taskElement.querySelector('.task-priority').textContent,
-                description: taskElement.querySelector('p').textContent,
-                dueDate: taskElement.querySelector('.fa-calendar') ? 
-                    taskElement.querySelector('.fa-calendar').parentElement.textContent.trim() : '',
+                dueDate: taskElement.querySelector('.task-date') ? 
+                    taskElement.querySelector('.task-date').textContent.replace('calendar', '').trim() : '',
                 subtasks: Array.from(taskElement.querySelectorAll('.subtask-item')).map(subtask => ({
                     text: subtask.querySelector('span').textContent,
                     completed: subtask.querySelector('input').checked
@@ -222,9 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Charger les tâches sauvegardées
-    loadTasks();
-
     // Event Listeners
     addTaskBtn.addEventListener('click', openModal);
     closeModal.addEventListener('click', closeModalHandler);
@@ -233,13 +279,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addSubtaskBtn').addEventListener('click', addSubtask);
     document.getElementById('addTagBtn').addEventListener('click', addTag);
     searchInput.addEventListener('input', handleSearch);
-    themeToggle.addEventListener('click', toggleTheme);
     filterButtons.forEach(btn => btn.addEventListener('click', handleFilter));
+    themeToggle.addEventListener('click', toggleTheme);
 
-    // Délégation d'événements pour les boutons de suppression
+    // Gestionnaire pour supprimer les sous-tâches et tags
     document.addEventListener('click', (e) => {
-        if (e.target.closest('.remove-button')) {
+        if (e.target.closest('.remove-item')) {
             e.target.closest('.subtask-item, .tag-item').remove();
         }
     });
+
+    // Charger les tâches au démarrage
+    loadTasks();
 });
