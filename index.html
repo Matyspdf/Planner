@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=UberMove:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- En-tête -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Mes Tâches</h1>
+                <div class="header-actions">
+                    <button class="header-button" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher une tâche..." id="searchInput">
+            </div>
+        </header>
+
+        <!-- Filtres -->
+        <div class="filters-section">
+            <div class="filters-scroll">
+                <button class="filter-button active" data-filter="all">
+                    <span class="filter-icon">📋</span>
+                    Toutes
+                </button>
+                <button class="filter-button" data-filter="today">
+                    <span class="filter-icon">📅</span>
+                    Aujourd'hui
+                </button>
+                <button class="filter-button" data-filter="important">
+                    <span class="filter-icon">⭐</span>
+                    Important
+                </button>
+                <button class="filter-button" data-filter="completed">
+                    <span class="filter-icon">✅</span>
+                    Terminées
+                </button>
+            </div>
+        </div>
+
+        <!-- Liste des tâches -->
+        <main class="tasks-section">
+            <div class="tasks-container" id="tasksContainer">
+                <!-- Les tâches seront ajoutées ici dynamiquement -->
+            </div>
+        </main>
+
+        <!-- Bouton d'ajout -->
+        <button class="add-button" id="addTaskBtn">
+            <i class="fas fa-plus"></i>
+            Nouvelle tâche
+        </button>
+
+        <!-- Modal de tâche -->
+        <div class="modal" id="taskModal">
+            <div class="modal-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>Nouvelle tâche</h2>
+                    <button class="close-button" id="closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <form id="taskForm">
+                        <div class="form-group">
+                            <input type="text" id="taskTitle" placeholder="Titre de la tâche" required>
+                        </div>
+
+                        <div class="form-group">
+                            <textarea id="taskDescription" placeholder="Description de la tâche"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <select id="taskCategory" required>
+                                    <option value="" disabled selected>Catégorie</option>
+                                    <option value="work">Travail</option>
+                                    <option value="personal">Personnel</option>
+                                    <option value="shopping">Courses</option>
+                                    <option value="health">Santé</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select id="taskPriority" required>
+                                    <option value="" disabled selected>Priorité</option>
+                                    <option value="low">Basse</option>
+                                    <option value="medium">Moyenne</option>
+                                    <option value="high">Haute</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="date" id="taskDueDate" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="time" id="taskTime">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="subtasks-container">
+                                <div class="input-with-button">
+                                    <input type="text" id="subtaskInput" placeholder="Ajouter une sous-tâche">
+                                    <button type="button" id="addSubtaskBtn" class="icon-button">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div id="subtasksList" class="subtasks-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="tags-container">
+                                <div class="input-with-button">
+                                    <input type="text" id="tagInput" placeholder="Ajouter un tag">
+                                    <button type="button" id="addTagBtn" class="icon-button">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div id="tagsList" class="tags-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="button-secondary" id="cancelTask">Annuler</button>
+                            <button type="submit" class="button-primary">Créer la tâche</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+</body>
+</html>
