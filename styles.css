@@ -211,6 +211,38 @@ body {
 .priority-medium { background: var(--warning); color: white; }
 .priority-low { background: var(--success); color: white; }
 
+.task-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-task-btn,
+.delete-task-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.edit-task-btn:hover {
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+}
+
+.delete-task-btn:hover {
+    background-color: #ffebee;
+    color: #f44336;
+}
+
+.task-description {
+    margin: 10px 0;
+    color: var(--text-color);
+}
+
 /* Bouton d'ajout */
 .add-button {
     position: fixed;
