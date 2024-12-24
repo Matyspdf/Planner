@@ -193,21 +193,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gestionnaire de stockage local
     const saveTasks = () => {
-        const tasks = Array.from(tasksContainer.children).map(taskElement => ({
-            title: taskElement.querySelector('.task-title').textContent,
-            priority: taskElement.querySelector('.task-priority').textContent,
-            description: taskElement.querySelector('p').textContent,
-            dueDate: taskElement.querySelector('.task-date')?.textContent,
-            completed: taskElement.classList.contains('completed')
-        }));
-        
+        const tasks = Array.from(tasksContainer.children).map(taskElement => {
+            return {
+                title: taskElement.querySelector('.task-title').textContent,
+                priority: taskElement.querySelector('.task-priority').textContent,
+                description: taskElement.querySelector('p').textContent,
+                dueDate: taskElement.querySelector('.fa-calendar') ? 
+                    taskElement.querySelector('.fa-calendar').parentElement.textContent.trim() : '',
+                subtasks: Array.from(taskElement.querySelectorAll('.subtask-item')).map(subtask => ({
+                    text: subtask.querySelector('span').textContent,
+                    completed: subtask.querySelector('input').checked
+                })),
+                tags: Array.from(taskElement.querySelectorAll('.tag')).map(tag => tag.textContent)
+            };
+        });
         localStorage.setItem('tasks', JSON.stringify(tasks));
     };
 
     const loadTasks = () => {
-        const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-        tasks.forEach(task => addTask(task));
+        const savedTasks = localStorage.getItem('tasks');
+        if (savedTasks) {
+            const tasks = JSON.parse(savedTasks);
+            tasksContainer.innerHTML = ''; // Clear existing tasks
+            tasks.forEach(task => {
+                const taskElement = createTaskElement(task);
+                tasksContainer.appendChild(taskElement);
+            });
+        }
     };
+
+    // Charger les tâches sauvegardées
+    loadTasks();
 
     // Event Listeners
     addTaskBtn.addEventListener('click', openModal);
@@ -226,7 +242,4 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.closest('.subtask-item, .tag-item').remove();
         }
     });
-
-    // Chargement initial
-    loadTasks();
 });
